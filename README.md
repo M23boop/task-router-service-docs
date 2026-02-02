@@ -67,7 +67,7 @@ This document is intended for:
   "language": "en",
   "priority": "normal"
 }
-# Responce (Success)
+### Responce (Success)
 {
   "routing_id": "route_98765",
   "status": "assigned",
@@ -78,7 +78,7 @@ This document is intended for:
     "rate_per_project": 140,
     "timezone_match": true
   }
-# Response (No Match) 
+### Response (No Match) 
 {
   "routing_id": "route_98766",
   "status": "no_match",
@@ -87,7 +87,7 @@ This document is intended for:
     "min_rate_found": 220,
     "number_of_candidates_checked": 35
   }
-}Configuration
+## Configuration
 
 Common configuration options:
 	•	MAX_CANDIDATES_PER_REQUEST — maximum freelancers per routing attempt.
@@ -98,7 +98,7 @@ Common configuration options:
 Configuration is typically managed via environment variables or a shared config service.
 
 
-Verification (How to Check It Works)
+## Verification (How to Check It Works)
 
 To confirm the service works as expected:
 	1.	Send a routing request with valid parameters.
@@ -107,8 +107,7 @@ To confirm the service works as expected:
 	4.	Review routing metadata and applied filters.
 	5.	Check logs using the corresponding routing_id.
 
-
-Logs & Debugging
+## Logs & Debugging
 
 Each routing session is logged with:
 	•	routing_id
@@ -125,7 +124,7 @@ To debug issues:
 	3.	Review filtering logic and error messages.
 
 
-Limitations
+## Limitations
 	•	The service does not:
 	•	create tasks,
 	•	modify freelancer profiles,
@@ -136,7 +135,7 @@ Limitations
 	•	Outdated data may lead to suboptimal results.
 
 
-Typical Questions
+## Typical Questions
 
 Why was no freelancer assigned?
 Check the reason and details fields — common causes include strict budgets or narrow skill requirements.
@@ -146,3 +145,7 @@ No. Manual assignment should be handled by the marketplace backend.
 
 Can non-technical teams use this service?
 Yes. Product, support, and operations teams can send test requests, review logs, and use this document as a reference.
+
+## Status of This Document
+
+This README is a **sample internal documentation** created to demonstrate structure, clarity, and approach to technical and product writing.
