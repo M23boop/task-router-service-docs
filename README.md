@@ -1,5 +1,3 @@
-# task-router-service-docs
-Sample product &amp; technical documentation
 # Task Router Service
 
 > Sample internal documentation for a microservice that routes incoming tasks to the right freelancers in a marketplace.
@@ -17,41 +15,41 @@ It is designed to:
 
 This document is intended for:
 - product managers,
-- support / operations teams,
+- support and operations teams,
 - engineers integrating with the service,
-- technical writers working on external documentation.
+- technical writers preparing user-facing documentation.
 
 ---
 
 ## Key Concepts
 
-- **Task** — a unit of work created by a client (e.g. “Translate 10-page document”, “Design a landing page”).
-- **Freelancer** — a verified contractor in the marketplace with a profile, skills, and rates.
-- **Routing rules** — a set of conditions that determine which freelancers are eligible for a task.
-- **Routing attempt** — a single try to assign a task to a freelancer or a small group of freelancers.
-- **Routing session** — the full process of assigning one task from creation to final assignment or timeout.
+- **Task** — a unit of work created by a client (e.g. “Translate a 10-page document”, “Design a landing page”).
+- **Freelancer** — a verified contractor with a profile, skills, and rates.
+- **Routing rules** — conditions that determine which freelancers are eligible.
+- **Routing attempt** — a single attempt to assign a task.
+- **Routing session** — the full process from task creation to assignment or timeout.
 
 ---
 
 ## How It Works (High-Level)
 
 1. A new task is created in the marketplace.
-2. The marketplace backend sends a request to Task Router Service with task details (scope, budget, deadline, required skills, language, etc.).
+2. The marketplace backend sends task details to Task Router Service.
 3. Task Router:
-   - filters out ineligible freelancers (missing skills, wrong timezone, rate outside budget, blocked users, etc.),
-   - ranks the remaining freelancers (relevance, response rate, recent activity),
-   - selects a small set of candidates.
+   - filters out ineligible freelancers,
+   - ranks remaining candidates,
+   - selects the most suitable ones.
 4. The service returns:
-   - the selected freelancer(s),
-   - routing metadata (why they were selected),
+   - selected freelancer(s),
+   - routing metadata explaining the decision,
    - a routing ID for logging and debugging.
-5. The marketplace assigns the task or retries with updated parameters if needed.
+5. The marketplace assigns the task or retries if needed.
 
 ---
 
 ## API (Simplified)
 
-> This section describes a simplified version of the API used to interact with the service.
+> **Note:** The examples below are illustrative and do not represent a live API.
 
 ### Request
 
@@ -68,7 +66,9 @@ This document is intended for:
   "required_skills": ["copywriting", "landing-pages"],
   "language": "en",
   "priority": "normal"
-}{
+}
+# Responce (Success)
+{
   "routing_id": "route_98765",
   "status": "assigned",
   "freelancer_id": "freelancer_456",
@@ -78,7 +78,8 @@ This document is intended for:
     "rate_per_project": 140,
     "timezone_match": true
   }
-}{
+# Response (No Match) 
+{
   "routing_id": "route_98766",
   "status": "no_match",
   "reason": "no_freelancers_within_budget",
@@ -86,84 +87,62 @@ This document is intended for:
     "min_rate_found": 220,
     "number_of_candidates_checked": 35
   }
-}
-⸻
-
-Configuration
+}Configuration
 
 Common configuration options:
-	•	MAX_CANDIDATES_PER_REQUEST — maximum number of freelancers to consider in a single routing attempt.
-	•	ROUTING_TIMEOUT_MS — maximum time allowed for a routing session.
-	•	DEFAULT_PRIORITY — default priority (e.g. normal, high).
-	•	EXCLUDED_STATUSES — list of freelancer statuses that should never receive tasks (e.g. blocked, suspended).
+	•	MAX_CANDIDATES_PER_REQUEST — maximum freelancers per routing attempt.
+	•	ROUTING_TIMEOUT_MS — maximum allowed routing time.
+	•	DEFAULT_PRIORITY — default task priority.
+	•	EXCLUDED_STATUSES — freelancer statuses excluded from routing.
 
 Configuration is typically managed via environment variables or a shared config service.
 
-⸻
 
 Verification (How to Check It Works)
 
-When you make a test request to Task Router, verify:
-	1.	Request is accepted
-	•	HTTP status is 200 or 202.
-	•	routing_id is present in the response.
-	2.	Routing logic is applied
-	•	returned freelancer has required skills,
-	•	rate is within the budget,
-	•	timezone / availability rules are respected (if applicable).
-	3.	Logs contain routing details
-	•	search by routing_id,
-	•	check which filters were applied,
-	•	confirm why specific freelancers were excluded.
-	4.	No silent failures
-	•	status is either assigned or no_match,
-	•	no “empty” response without a reason.
+To confirm the service works as expected:
+	1.	Send a routing request with valid parameters.
+	2.	Confirm the response status is assigned or no_match.
+	3.	Verify the selected freelancer matches required skills.
+	4.	Review routing metadata and applied filters.
+	5.	Check logs using the corresponding routing_id.
 
-⸻
 
 Logs & Debugging
 
-Each routing session is logged with the following fields:
+Each routing session is logged with:
 	•	routing_id
 	•	task_id
-	•	status (assigned, no_match, error)
-	•	selected_freelancer_id (if any)
+	•	status
+	•	selected_freelancer_id
 	•	filters_applied
 	•	number_of_candidates_checked
 	•	timestamp
 
-To debug an issue:
-	1.	Reproduce the routing request (using the same task_id and parameters).
-	2.	Find the corresponding log entry by routing_id or task_id.
-	3.	Review:
-	•	which filters excluded most candidates,
-	•	whether the budget or skills were too strict,
-	•	whether there were any internal errors.
+To debug issues:
+	1.	Reproduce the routing request.
+	2.	Locate logs by routing_id or task_id.
+	3.	Review filtering logic and error messages.
 
-⸻
 
 Limitations
 	•	The service does not:
 	•	create tasks,
-	•	change freelancer profiles,
+	•	modify freelancer profiles,
 	•	send notifications.
-	•	Task Router relies on:
-	•	up-to-date freelancer data,
-	•	correct task parameters from the marketplace backend.
-	•	If the underlying data is outdated or incomplete, routing results will be suboptimal.
+	•	Routing quality depends on:
+	•	accurate freelancer data,
+	•	correct task parameters.
+	•	Outdated data may lead to suboptimal results.
 
-⸻
 
 Typical Questions
 
-“Why was no freelancer assigned?”
-Check the reason and details fields — often the main cause is budget limits, very narrow skill requirements, or conflicting filters.
+Why was no freelancer assigned?
+Check the reason and details fields — common causes include strict budgets or narrow skill requirements.
 
-“Can we force-assign a specific freelancer?”
-This should be done through the marketplace backend, not directly through Task Router. The service is designed for automated, rule-based decisions.
+Can a freelancer be force-assigned?
+No. Manual assignment should be handled by the marketplace backend.
 
-“Can non-technical team members use this?”
-Yes. Product, support, and operations teams can:
-	•	send test requests via internal tools or API clients,
-	•	check logs with predefined filters,
-	•	use this document as a reference for interpreting results.
+Can non-technical teams use this service?
+Yes. Product, support, and operations teams can send test requests, review logs, and use this document as a reference.
